@@ -1,3 +1,4 @@
+from typing import Text
 import unittest
 
 from textnode import TextNode, TextType
@@ -32,6 +33,29 @@ class TestTextNode(unittest.TestCase):
         self.assertEqual(html_node.tag, "img")
         self.assertEqual(html_node.value, "")
         self.assertEqual(html_node.props_to_html(), 'src="cool.com" alt="This is an image text node"')
+
+    def text_delimiter_split1(self):
+        node = TextNode("This is text with a `code block` word", TextType.PLAIN_TEXT)
+        new_nodes = TextNode.split_nodes_delimiter([node], "`", TextType.CODE_TEXT)
+
+        self.assertEqual([
+            TextNode("This is text with a ", TextType.PLAIN_TEXT),
+            TextNode("code block", TextType.CODE_TEXT),
+            TextNode(" word", TextType.PLAIN_TEXT),
+            ], new_nodes)
+
+    def text_delimiter_split2(self):
+        node = TextNode("This is text with anoter _italic word_", TextType.PLAIN_TEXT)
+        new_nodes = TextNode.split_nodes_delimiter([node], "_", TextType.ITALIC_TEXT)
+
+        expected: list[TextNode] = [TextNode("This is text with another ", TextType.PLAIN_TEXT), TextNode("italic block", TextType.ITALIC_TEXT), TextNode("", TextType.PLAIN_TEXT)]
+
+        self.assertEqual([
+            TextNode("This is text with a ", TextType.PLAIN_TEXT),
+            TextNode("code block", TextType.CODE_TEXT),
+            TextNode(" word", TextType.PLAIN_TEXT),
+            ], new_nodes)
+
 
 
 class TestHTMLNode(unittest.TestCase):

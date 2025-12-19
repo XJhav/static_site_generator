@@ -1,4 +1,5 @@
 from enum import Enum
+from pydoc import text
 from typing import override
 from htmlnode import HTMLNode, LeafNode
 
@@ -41,6 +42,23 @@ class TextNode:
             case TextType.IMAGE:
                 return LeafNode("img", "", {"src": self.url, "alt": self.text})
 
-def main() -> None:
-    my_node = TextNode("This is some anchor text", TextType.LINK, "https://www.boot.dev")
-    print(my_node)
+    @staticmethod
+    def split_nodes_delimiter(old_nodes: list[TextNode], delimiter: str, text_type: TextType) -> list[TextNode]:
+        node_list: list[TextNode] = []
+
+        for node in old_nodes:
+            if node.text_type != TextType.PLAIN_TEXT:
+                continue
+
+            split_text = node.text.split(delimiter)
+            node_list_extension = list(map(lambda data: TextNode(data[1], text_type if data[0] % 2 == 1 else TextType.PLAIN_TEXT), enumerate(split_text)))
+            
+            node_list.extend(node_list_extension)
+
+
+        return node_list
+
+
+
+
+
