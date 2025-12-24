@@ -1,7 +1,7 @@
 import shutil
 import os
 
-def copy_static_to_public():
-    if os.path.exists("public/"):
-        shutil.rmtree("public/")
-    _ = shutil.copytree("static/", "public/")
+def copy_static_to_dir(target_dir: str):
+    if os.path.exists(target_dir):
+        shutil.rmtree(target_dir)
+    _ = shutil.copytree("static", target_dir)
