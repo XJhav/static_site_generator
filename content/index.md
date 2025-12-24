@@ -16,10 +16,10 @@
 3. this
 4. !
 
-'''
+```
 public static void main(String[] args) {
   System.out.println("Xander is cool")
 }
-''''
+```
 
 > Xander is Cool
