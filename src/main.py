@@ -1,11 +1,8 @@
-from textnode import TextNode, TextType
+from statics import copy_static_to_public
+from page_generation import generate_page, generate_pages_recursive
 
 def main() -> None:
-    node = TextNode(
-        "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png) and another ![second image](https://i.imgur.com/3elNhQu.png)",
-        TextType.PLAIN_TEXT,
-    )
-    new_nodes = TextNode.split_nodes_image([node])
-    print(new_nodes)
-
+    copy_static_to_public()
+    generate_pages_recursive("content", "template.html", "public")
+    
 main()

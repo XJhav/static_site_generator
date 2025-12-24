@@ -57,6 +57,8 @@ class TextNode:
 
             if node_list_extension[-1].text == "":
                 _ = node_list_extension.pop()
+            if len(node_list_extension) <= 0:
+                continue
             if node_list_extension[0].text == "":
                 _ = node_list_extension.pop(0)
             
@@ -127,6 +129,7 @@ class TextNode:
 
     @staticmethod
     def nodes_from_text(text: str) -> list[TextNode]:
+        text = strip_and_replace_newlines(text)
         nodes = [TextNode(text, TextType.PLAIN_TEXT)]
 
         # Add Links and Images
@@ -144,3 +147,9 @@ class TextNode:
         nodes = TextNode.split_nodes_delimiter(nodes, "_", TextType.ITALIC_TEXT)
 
         return nodes
+
+def strip_and_replace_newlines(text: str) -> str:
+    return " ".join(filter(lambda s: s.strip() != "", map(lambda s: s.strip(), text.splitlines())))
+
+
+

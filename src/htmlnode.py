@@ -26,12 +26,23 @@ class LeafNode(HTMLNode):
     
     @override
     def to_html(self) -> str:
+        if self.tag == None:
+            return self.value if self.value != None else ""
         return f'<{self.tag}{"" if not self.props else " "}{self.props_to_html()}>{self.value}</{self.tag}>'
 
 
 class ParentNode(HTMLNode):
     def __init__(self, tag: str, children: list[HTMLNode], props: dict[str, Any] = {}) -> None:
         super().__init__(tag, None, children, props)
+
+    def add_child(self, child: HTMLNode) -> ParentNode:
+        assert (self.children is not None)
+        self.children.append(child)
+        return self
+
+    def add_property(self, key: str, value: Any) -> ParentNode:
+        self.props[key] = value
+        return self
 
     @override
     def to_html(self) -> str:

@@ -1,9 +1,13 @@
+import code
+from shlex import quote
+from turtle import heading
 from typing import Text
 import unittest
 
 from regexing import extract_markdown_images, extract_markdown_links
 from textnode import TextNode, TextType
 from htmlnode import HTMLNode, LeafNode, ParentNode
+from blocktext import markdown_to_blocks, block_to_block_type, markdown_to_html_node
 
 class TestTextNode(unittest.TestCase):
     def test_eq(self):
@@ -164,6 +168,124 @@ class TestHTMLNode(unittest.TestCase):
             "<div><span><b>grandchild</b></span></div>",
         )
 
+class TestBlockText(unittest.TestCase):
+    def test_markdown_to_blocks(self):
+        md = """
+This is **bolded** paragraph
+
+This is another paragraph with _italic_ text and `code` here
+This is the same paragraph on a new line
+
+- This is a list
+- with items
+"""
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(
+            blocks,
+            [
+                "This is **bolded** paragraph",
+                "This is another paragraph with _italic_ text and `code` here\nThis is the same paragraph on a new line",
+                "- This is a list\n- with items",
+            ],
+        )
+
+    def test_block_to_block_type(self):
+        unordered1 = "- Item1\n- Item2    \n- Item3"
+        ordered1 = "1. Item1\n2. Item2     \n3. Item3"
+        code1 = "```java\npublic static void main(String[] args) {\n\tSystem.out.println(\"Hello\")\n}```"
+        quote1 = "> \"This is a quote\""
+        heading1 = "# Heading1"
+        heading2 = "#### Heading2"
+        p1 = "-Item1\n-Item2"
+        p2 = "1. Item1\n2. Item2\n1. Item3"
+        p3 = ">Not a quote"
+        p4 = "####### 7 Hashtaghs"
+        p5 = "#1 Paragraph"
+        p6 = "1.Item1\n2.Item2"
+
+        block_list = [unordered1, ordered1, code1, quote1, heading1, heading2, p1, p2, p3, p4, p5, p6]
+        expected = ["unordered_list", "ordered_list", "code", "quote", "heading", "heading", "paragraph", "paragraph", "paragraph", "paragraph", "paragraph", "paragraph"]
+
+        self.assertListEqual(list(map(lambda s: block_to_block_type(s).value, block_list)), expected)
+
+    def test_paragraphs(self):
+        md = """
+    This is **bolded** paragraph
+    text in a p
+    tag here
+
+    This is another paragraph with _italic_ text and `code` here
+
+    """
+
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><p>This is <b>bolded</b> paragraph text in a p tag here</p><p>This is another paragraph with <i>italic</i> text and <code>code</code> here</p></div>",
+        )
+
+    def test_codeblock(self):
+        md = """
+    ```
+This is text that _should_ remain\nthe **same** even with inline stuff
+    ```
+    """
+
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><pre><code>This is text that _should_ remain\nthe **same** even with inline stuff</code></pre></div>",
+        )
+
+    def test_ordered_list(self):
+        md = """1. Item1
+2. Item2
+3. Item3
+"""
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(html,
+         "<div><ol><li>Item1</li><li>Item2</li><li>Item3</li></ol></div>"
+        )
+
+    def test_unordered_list(self):
+        md = """- Item1
+- Item2
+- Item3
+"""
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(html,
+        "<div><ul><li>Item1</li><li>Item2</li><li>Item3</li></ul></div>"
+        )
+
+    def test_quote(self):
+        md = """This is regular text
+
+> This is a quote
+
+This is more regular text
+"""
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(html,
+        "<div><p>This is regular text</p><blockquote>This is a quote</blockquote><p>This is more regular text</p></div>"
+        )
+
+    def test_headers(self):
+        md = """# Title
+
+## Header
+
+####### Just Regular Text?
+"""
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(html,
+        "<div><h1>Title</h1><h2>Header</h2><p>####### Just Regular Text?</p></div>"
+        )
 
 if __name__ == "__main__":
     _ = unittest.main()
